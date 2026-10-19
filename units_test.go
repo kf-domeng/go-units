@@ -88,6 +88,38 @@ func TestFindExact(t *testing.T) {
 	assert.Error(t, err)
 }
 
+// test-only units, registered once at package init to avoid duplicate name panics
+var (
+	testWidget      = NewUnit("widget", "wg", UnitOptionQuantity("test"))
+	testMicroWidget = Micro(testWidget, UnitOptionAliases("mcwg"))
+)
+
+func TestMicroSignAlias(t *testing.T) {
+	// micro sign (U+00B5) should resolve to the same unit as Greek mu (U+03BC)
+	assert.Contains(t, MicroMeter.Names(), "µm")
+
+	u, err := FindExact("µm")
+	assert.NoError(t, err)
+	assert.Equal(t, MicroMeter, u)
+
+	u, err = FindExact("μm")
+	assert.NoError(t, err)
+	assert.Equal(t, MicroMeter, u)
+}
+
+func TestMicroSignAliasWithUserAliases(t *testing.T) {
+	names := testMicroWidget.Names()
+	assert.Contains(t, names, "μwg")  // primary symbol (Greek mu)
+	assert.Contains(t, names, "µwg")  // micro sign alias
+	assert.Contains(t, names, "mcwg") // user-passed alias
+
+	for _, name := range []string{"μwg", "µwg", "mcwg", "microwidget"} {
+		u, err := FindExact(name)
+		assert.NoError(t, err, name)
+		assert.Equal(t, testMicroWidget, u, name)
+	}
+}
+
 // ensure all units within the same quantity resolve
 // a conversion path
 func TestPathResolve(t *testing.T) {

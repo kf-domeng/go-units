@@ -54,9 +54,7 @@ func Deca(b Unit, o ...UnitOption) Unit   { return mags["deca"].makeUnit(b, o...
 func Deci(b Unit, o ...UnitOption) Unit   { return mags["deci"].makeUnit(b, o...) }
 func Centi(b Unit, o ...UnitOption) Unit  { return mags["centi"].makeUnit(b, o...) }
 func Milli(b Unit, o ...UnitOption) Unit  { return mags["milli"].makeUnit(b, o...) }
-
-// Micro magnitude prefix method [uses the Greek letter mu (μ) and not the micro symbol (µ)]
-func Micro(b Unit, o ...UnitOption) Unit  { return mags["micro"].makeUnit(b, o...) }
+func Micro(b Unit, o ...UnitOption) Unit  { return mags["micro"].makeUnit(b, microSignAlias(b, o)...) }
 func Nano(b Unit, o ...UnitOption) Unit   { return mags["nano"].makeUnit(b, o...) }
 func Pico(b Unit, o ...UnitOption) Unit   { return mags["pico"].makeUnit(b, o...) }
 func Femto(b Unit, o ...UnitOption) Unit  { return mags["femto"].makeUnit(b, o...) }
@@ -65,6 +63,16 @@ func Zepto(b Unit, o ...UnitOption) Unit  { return mags["zepto"].makeUnit(b, o..
 func Yocto(b Unit, o ...UnitOption) Unit  { return mags["yocto"].makeUnit(b, o...) }
 func Ronto(b Unit, o ...UnitOption) Unit  { return mags["ronto"].makeUnit(b, o...) }
 func Quecto(b Unit, o ...UnitOption) Unit { return mags["quecto"].makeUnit(b, o...) }
+
+// Prepend the micro sign (µ, U+00B5) symbol as an alias, since it is visually
+// identical to the Greek letter mu (μ, U+03BC) used for the micro prefix symbol.
+// Find() resolves these automatically, but this helper is needed for FindExact()
+func microSignAlias(base Unit, opts []UnitOption) []UnitOption {
+	if base.Symbol == "" {
+		return opts
+	}
+	return append([]UnitOption{UnitOptionAliases("µ" + base.Symbol)}, opts...)
+}
 
 // Create magnitude unit and conversion given a base unit
 func (mag magnitude) makeUnit(base Unit, addOpts ...UnitOption) Unit {
